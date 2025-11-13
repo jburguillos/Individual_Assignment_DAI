@@ -7,16 +7,16 @@ Streamlit app with LLM (semantic) scoring + ROUGE-L similarity and a blended sco
 python -m venv chatbot-env
 .\chatbot-env\Scripts\Activate.ps1
 pip install --upgrade pip wheel
-pip install -r requirements.txt
+pip install -r requirements.txt```
 
 ## Ollama model
 
 Pull and run the model locally:
-
+```
 ollama pull llama3.2:3b
-ollama serve
+ollama serve```
 
 
 Then run the app:
-
-streamlit run chatbot.py
+```
+streamlit run chatbot.py```
