@@ -1,0 +1,194 @@
+Final Assignment 11 – Named Entity Recognition & Network Analysis
+
+This repository contains a Jupyter Notebook, “Final Assignment 11 - NER.ipynb”, that performs:
+
+1. Named Entity Recognition (NER) on faculty descriptions from IE University.
+2. Social Network Analysis (SNA) on the extracted entities to understand relationships between professors, universities, companies, studies and courses.
+3. Interactive visualization of ego networks for key nodes.
+
+---
+
+1. Project Overview
+
+The goal of the notebook is to:
+
+- Clean raw HTML-like faculty bios.
+- Use spaCy + custom rules to extract structured entities:
+  - Universities
+  - Companies
+  - Degrees/Studies
+  - Courses
+- Build a graph (NetworkX) connecting professors to these entities.
+- Compute centrality measures and explore the most important / connected nodes.
+- Filter out dominant nodes (IE University / IE Business School) to reveal secondary structures.
+- Export interactive HTML graphs using pyvis for selected ego networks.
+
+---
+
+2. Data
+
+The notebook expects a CSV file:
+
+- Input file: teachers_db_practice.csv
+- Key columns used:
+  - full_info – raw HTML/HTML-like text with faculty information.
+  - alias – short identifier for each professor.
+
+Preprocessing
+
+1. full_info is cleaned with BeautifulSoup to strip HTML tags → cleaned_info.
+2. cleaned_info is passed to a custom NER function:
+   - Runs spaCy (en_core_web_sm).
+   - Uses pattern-based rules to categorize entities into:
+     - UNIVERSITY
+     - COMPANY
+     - STUDY
+     - COURSE
+   - Cleans textual noise (bullet points, common headings, country suffixes, etc.).
+3. The extracted entities are stored in a new column:
+   - df['entities'] → dict per row like:
+     {
+       "UNIVERSITY": [...],
+       "COMPANY":   [...],
+       "STUDY":     [...],
+       "COURSE":    [...]
+     }
+
+---
+
+3. Notebook Structure
+
+The main sections of the notebook are:
+
+1) Setup
+   - Imports Python libraries: pandas, spacy, networkx, matplotlib, bs4 (BeautifulSoup), pyvis, re.
+   - (Optionally) installs missing packages.
+   - Loads the spaCy model: en_core_web_sm.
+
+2) Data Loading and Preprocessing
+   - Loads teachers_db_practice.csv into a DataFrame.
+   - Cleans HTML from full_info → cleaned_info.
+
+3) Named Entity Recognition (NER)
+   - clean_entity_text(text):
+     - Removes bullet symbols, headings (“Academic Background”, “Corporate Experience”), country suffixes, extra commas, etc.
+   - extract_and_clean_entities(text):
+     - Runs spaCy pipeline on cleaned_info.
+     - Uses entity labels + keyword-based rules to fill UNIVERSITY, COMPANY, STUDY, COURSE.
+     - Returns a dict with de-duplicated lists (internally uses Python sets).
+   - Applies NER to each professor: df['entities'] = df['cleaned_info'].apply(extract_and_clean_entities).
+
+4) Social Network Analysis (SNA) with NetworkX
+   - Builds an undirected graph G_cleaned.
+   - Adds:
+     - One node per professor (type='professor').
+     - Nodes for universities, companies, studies (type='university' | 'company' | 'study').
+     - Edges:
+       - professor -- university (relation: affiliated_with)
+       - professor -- company (relation: worked_at)
+       - professor -- study (relation: studied)
+   - Computes:
+     - Basic statistics (nodes, edges, connectivity, components).
+     - Degree centrality
+     - Betweenness centrality
+     - Eigenvector centrality
+   - Prints Top 5 nodes for each centrality metric.
+
+5) Subgraphs & Visual Exploration
+   - Defines helper function plot_subgraph(...) using matplotlib.
+   - Builds ego networks around:
+     - Most connected node (by degree).
+     - Node with highest betweenness.
+     - Node with highest eigenvector centrality.
+   - Visualizes these subgraphs with color-coding by node type.
+
+6) Filtered Graph Analysis
+   - Creates G_filtered as a copy of G_cleaned.
+   - Removes overly dominant hubs:
+     - "IE University", "IE Business School" (if present).
+   - Re-runs centrality analysis on G_filtered.
+   - Provides centrality rankings without those dominating nodes.
+
+7) Interactive Graph Export (pyvis)
+   - Defines pyvis_color_map for each node type.
+   - Uses a curated list nodes_to_visualize (top nodes from each centrality list).
+   - For each selected node:
+     - Builds its ego graph (on G_filtered).
+     - Creates a pyvis interactive network.
+     - Sets node colors and hover tooltips according to node type.
+     - Saves to HTML:
+       - interactive_ego_network_<Node_Name>.html
+   - Prints messages indicating which files were created.
+
+---
+
+4. Requirements
+
+Tested with Python 3.x and the following libraries:
+
+- pandas
+- spacy
+- networkx
+- matplotlib
+- beautifulsoup4
+- pyvis
+
+Plus a spaCy English model:
+
+    python -m spacy download en_core_web_sm
+
+You can install everything via:
+
+    pip install pandas spacy networkx matplotlib beautifulsoup4 pyvis
+    python -m spacy download en_core_web_sm
+
+---
+
+5. How to Run the Notebook
+
+1. Copy this notebook and place teachers_db_practice.csv in the same folder.
+2. (Optional) Create and activate a virtual environment.
+3. Install dependencies (see above).
+4. Open the notebook:
+
+       jupyter notebook "Final Assignment 11 - NER.ipynb"
+
+5. In Jupyter:
+   - Run cells top-to-bottom.
+   - Confirm that:
+     - teachers_db_practice.csv loads correctly.
+     - spaCy model en_core_web_sm is installed.
+   - At the end, check the working directory for the exported HTML files:
+     - interactive_ego_network_*.html
+
+6. Open those HTML files in a browser to explore the interactive ego networks.
+
+---
+
+6. Customization
+
+- Tweaking NER quality
+  - Edit extract_and_clean_entities(text):
+    - Adjust how universities, companies, studies, and courses are detected.
+    - Add/remove keywords or new patterns.
+  - Edit clean_entity_text(text):
+    - Add new rules to remove specific prefixes/suffixes or noisy patterns.
+
+- Changing which nodes are filtered
+  - In the “Filtered Graph” section, modify:
+    nodes_to_remove = ['IE University', 'IE Business School']
+    to include or exclude different high-degree hubs.
+
+- Changing which ego networks are exported
+  - In the final pyvis export cell, update nodes_to_visualize with:
+    - Different professors.
+    - Universities or companies of interest.
+    - Any node names present in G_filtered.
+
+---
+
+7. Notes (Spanish)
+
+- El cuaderno limpia las biografías de los profesores, extrae entidades (universidades, empresas, estudios, cursos) y construye una red de relaciones.
+- Luego analiza quiénes son los nodos más importantes por conectividad e influencia y crea grafos interactivos en HTML.
+- Si quieres adaptar el NER a otro tipo de texto (por ejemplo, CVs), solo tienes que ajustar las funciones de extracción y limpieza de entidades.
