@@ -127,7 +127,7 @@ LANG = {
         "backend": "ROUGE backend",
         "tab_practice": "Practice",
         "tab_dashboard": "Dashboard",
-        "question": "Question",
+        "question": "Explain what you know about the following concept",
         "your_answer": "Your answer",
         "submit_answer": "Submit answer",
         "write_answer_first": "Please write an answer first.",
@@ -167,7 +167,7 @@ LANG = {
         "backend": "Backend ROUGE",
         "tab_practice": "Práctica",
         "tab_dashboard": "Panel",
-        "question": "Pregunta",
+        "question": "¿Qué sabes sobre este concepto?",
         "your_answer": "Tu respuesta",
         "submit_answer": "Enviar respuesta",
         "write_answer_first": "Por favor, escribe una respuesta primero.",
@@ -583,3 +583,4 @@ if st.sidebar.button(T["restart"]):
     for k in ["asked", "current_idx", "history", "mode", "last_eval"]:
         st.session_state.pop(k, None)
     st.rerun()  # <<— FIXED
+
